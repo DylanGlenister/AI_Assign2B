@@ -31,6 +31,13 @@ The basic version of TBRGS will be for the Boroondara area. A user can specify t
 ### In simple terms
 Use machine learning to create a model that can predict the traffic conditions for a given street at a given time. Then use that data as an edge cost in our pathfinding algorithms.
 
+#### Roles
+We have four parts, two frontend, two backend.
+- Frontend has the gui for inputing origin and destination, then outputing the resulting path.
+- Frontend has integration with OpenStreetMaps to visualise the path.
+- Backend has the machine learning part, to take the traffic data and give an edge cost.
+- Backend has the pathfinding algorithms, needed to be retrofitted to work with the gui and models.
+
 ### Definitions
 - TBRGS: Traffic-Based Route Guidance S?
 - LSTM: Long Short-Term Memory ai model
