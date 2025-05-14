@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import pandas as pd
+import webview
 
 # Load SCATS reference list
 scats_df = pd.read_csv("scats_reference.csv")
@@ -57,9 +58,15 @@ for field in fields:
 for i in range(5):
     tk.Label(routes_frame, text=f"Route {i+1}: [Details here]").pack(anchor='w')
 
+with open('./map.html', 'r', encoding='utf-8') as mapfile:
+    maphtml = mapfile.read()
+
 # Map Placeholder
-map_placeholder = tk.Label(map_frame, text="Map Display Area", bg="white")
-map_placeholder.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+#map_placeholder = tk.Label(map_frame, text="Map Display Area", bg="white")
+#map_placeholder.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+webview.create_window("Fuck", html="./map.html")
+webview.start()
 
 # Start GUI
 root.mainloop()

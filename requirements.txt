@@ -3,4 +3,4 @@ pandas
 ipykernel
 networkx
 folium
-webview
+pywebview
