@@ -480,7 +480,7 @@ def beam_search(_problem: GraphProblem, _debug, _k=2) -> tuple[Node | None, int]
 		frontier.extend(new_candidates)
 	return None, len(explored)
 
-def import_graph(_file, _useChar = False, _debug=False):
+def import_graph_from_file(_file, _useChar = False, _debug=False):
 	"""Import the graph data. Create the GraphProblem and return it, also return the goal."""
 
 	def parse_graph(_file):
@@ -625,7 +625,7 @@ def main(_output = True, _debug = False):
 		print("Excess arguments: python search.py <filename> <method>")
 
 	# Import the graph file
-	graph_problem, goals = import_graph(sys.argv[1], False, _debug)
+	graph_problem, goals = import_graph_from_file(sys.argv[1], False, _debug)
 
 	# Extract parameter 2: "method" function used
 	method = select_method(sys.argv[2])
@@ -672,5 +672,5 @@ def compute_average_runtime(_freq = 25000):
 	print("Average exection time accross ", _freq, " runs is ", sum / _freq)
 
 if __name__ == "__main__":
-	main()
+	main(False, True)
 	#compute_average_runtime()
