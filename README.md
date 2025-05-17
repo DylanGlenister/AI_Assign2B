@@ -45,3 +45,18 @@ We have four parts, two frontend, two backend.
 
 ### Neural Networks (For reference)
 ![I forgot the original source](./ChartOfNeuralNetworks.png)
+
+## TODO
+- Extracting all the important data from the sources.
+- Machine learning
+	- Linear regression for testing input data (maybe)
+	- LSTM model
+	- GRU model
+- Pathfinding
+	- Import graph data
+	- Import machine learning data
+- GUI
+	- Input
+	- Output
+		- As text
+		- Open street maps
