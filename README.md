@@ -53,8 +53,8 @@ We have four parts, two frontend, two backend.
 	- LSTM model
 	- GRU model
 - Pathfinding
-	- Import graph data
-	- Import machine learning data
+	- Import graph data into problem
+	- Import machine learning data into graph data
 - GUI
 	- Input
 	- Output
