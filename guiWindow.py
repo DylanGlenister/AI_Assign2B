@@ -25,7 +25,7 @@ main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
 # === Input Frame ===
 input_frame = tk.Frame(main_frame)
-input_frame.pack(pady=20, padx=20)
+input_frame.pack(pady=10)
 
 # Create an array of times that can be selected from
 timeset: list[str] = []
@@ -58,9 +58,26 @@ create_field('Models', models)
 routes_frame = tk.LabelFrame(main_frame, text='Routes', padx=10, pady=10)
 routes_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
 
-# Route Display Placeholders
+# === Placeholder Button ===
+def placeholder_action():
+	print("This will trigger the ML model and show the routes.")
+	# For now, update route labels with placeholder text
+	for i in range(5):
+		route_labels[i].config(text=f"Route {i+1}: [Generated route {i+1} shown here]")
+
+placeholder_btn = tk.Button(main_frame, text="Calculate Route", command=placeholder_action)
+placeholder_btn.pack(pady=10)
+
+# === Routes Display Box ===
+routes_frame = tk.LabelFrame(main_frame, text="Routes", padx=10, pady=10)
+routes_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+
+# Add placeholder labels
+route_labels = []
 for i in range(5):
-	tk.Label(routes_frame, text=f'Route {i+1}: [Details here]').pack(anchor='w')
+	lbl = tk.Label(routes_frame, text=f"Route {i+1}: [Details here]")
+	lbl.pack(anchor='w')
+	route_labels.append(lbl)
 
 # === Generate Map Button ===
 def calculate_route():
@@ -111,5 +128,5 @@ def calculate_route():
 map_btn = tk.Button(main_frame, text='Calculate route', command=calculate_route)
 map_btn.pack(pady=10)
 
-# Start GUI
+# Start the GUI
 root.mainloop()
