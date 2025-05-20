@@ -59,25 +59,19 @@ def create_graph(_df: pd.DataFrame, _debug = False):
 	graph = search.Graph(edges)
 	graph.locations = locations
 
-	return graph
+	return graph, locations
 
 def test():
 	processed_data = pd.read_csv('./processed.csv')
 
-	graph = create_graph(processed_data)
-
-	method = search.select_method('DFS')
-
-	if method is None:
-		print("Incorrect method type, valid methods:\nDFS, BFS, GBFS, AS, CUS1, CUS2, IDS, BS")
-		quit()
+	graph, _ = create_graph(processed_data)
 
 	origin = 4030
 	goal = [970]
 
 	problem = search.GraphProblem(origin, goal, graph)
 
-	result, count = method(problem, True)
+	result, count = search.astar_search(problem, True)
 
 	print('method=AS')
 	# \n
