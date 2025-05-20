@@ -54,33 +54,23 @@ create_field('End SCAT', scat_sites)
 create_field('Start Time', timeset)
 create_field('Models', models)
 
-# === Routes Frame ===
-routes_frame = tk.LabelFrame(main_frame, text='Routes', padx=10, pady=10)
-routes_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
-
-# === Placeholder Button ===
-def placeholder_action():
-	print("This will trigger the ML model and show the routes.")
-	# For now, update route labels with placeholder text
-	for i in range(5):
-		route_labels[i].config(text=f"Route {i+1}: [Generated route {i+1} shown here]")
-
-placeholder_btn = tk.Button(main_frame, text="Calculate Route", command=placeholder_action)
-placeholder_btn.pack(pady=10)
-
 # === Routes Display Box ===
-routes_frame = tk.LabelFrame(main_frame, text="Routes", padx=10, pady=10)
+routes_frame = tk.LabelFrame(main_frame, text='Routes', padx=10, pady=10)
 routes_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
 
 # Add placeholder labels
-route_labels = []
+route_labels: list[tk.Label] = []
 for i in range(5):
-	lbl = tk.Label(routes_frame, text=f"Route {i+1}: [Details here]")
+	lbl = tk.Label(routes_frame, text=f'')
 	lbl.pack(anchor='w')
 	route_labels.append(lbl)
 
 # === Generate Map Button ===
 def calculate_route():
+
+	# Clear all the labels
+	for i in range(5):
+		route_labels[i].config(text=f'')
 
 	origin = entries['Start SCAT'].get()
 	goal = entries['End SCAT'].get()
@@ -89,12 +79,12 @@ def calculate_route():
 
 	if origin == '':
 		# No origin set, alert user
-		tk.Label(routes_frame, text='No start SCAT set!').pack(anchor='w')
+		route_labels[0].config(text=f'No start SCAT set!')
 		return
 
 	if goal == '':
 		# No goal set, alert user
-		tk.Label(routes_frame, text='No end SCAT set!').pack(anchor='w')
+		route_labels[0].config(text=f'No end SCAT set!')
 		return
 
 	origin = int(origin)
@@ -110,13 +100,16 @@ def calculate_route():
 
 	if result is None:
 		# No path found, alert user
-		tk.Label(routes_frame, text='No path found!').pack(anchor='w')
+		route_labels[0].config(text=f'No path found!')
 		return
 
 	path: list[search.Node] = result.solution()
 
-	tk.Label(routes_frame, text=f'Route: {path}').pack(anchor='w')
+	# This for loop should encompass up to where astar is called
+	for i in range(5):
+		route_labels[i].config(text=f'Route {i+1}: {path}')
 
+	# Need to change this to pass a list of paths
 	generateMap.generate_map(origin, goal, path, locations)
 
 	try:
@@ -130,3 +123,6 @@ map_btn.pack(pady=10)
 
 # Start the GUI
 root.mainloop()
+
+# Fucky path:
+# 2846 4273
