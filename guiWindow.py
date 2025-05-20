@@ -1,69 +1,114 @@
-import tkinter as tk
-from tkinter import ttk
-import pandas as pd
-import subprocess
-import webbrowser
 import os
+import tkinter as tk
+import webbrowser
+from tkinter import ttk
+
+import pandas as pd
+
+import construct_graph
+import generateMap
+import search
 
 # Load SCATS reference list
-scats_df = pd.read_csv("scats_reference.csv")
-scat_sites = sorted(scats_df['Site_Number'].unique().astype(str))
+scats_df = pd.read_csv('./processed.csv')
+scats_sorted = pd.Series(sorted(scats_df['SCATS'].unique()))
+scat_sites = scats_sorted.astype(str).tolist()
 
 # Create main window
 root = tk.Tk()
-root.title("Traffic-Based Route Guidance System")
-root.geometry("500x600")
+root.title('Traffic-Based Route Guidance System')
+root.geometry('500x600')
 
-# Main Frame
+# === Main Frame ===
 main_frame = tk.Frame(root)
 main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
-# Input Frame
+# === Input Frame ===
 input_frame = tk.Frame(main_frame)
 input_frame.pack(pady=20, padx=20)
 
-# Routes Frame
-routes_frame = tk.LabelFrame(main_frame, text="Routes", padx=10, pady=10)
-routes_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
+# Create an array of times that can be selected from
+timeset: list[str] = []
+for hour in range(24):
+	for minute in range(0, 46, 15):
+		timeset.append(f'{hour:0=2}:{minute:0=2}')
+
+# A list of the available models
+models = ['LSTM', 'GRU', 'Other']
+
+# References to each of the input boxes
+entries: dict[str, ttk.Combobox] = {}
 
 # Input Fields with Dropdowns
-fields = ["Start Scat", "End Scat", "Start time", "Model"]
-entries = {}
+def create_field(_name: str, _values: list[str]):
+	row = tk.Frame(input_frame)
+	row.pack(fill=tk.X, pady=5)
+	label = tk.Label(row, width=15, text=_name, anchor='w')
+	label.pack(side=tk.LEFT)
+	combo = ttk.Combobox(row, values=_values)
+	combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
+	entries[_name] = combo
 
-for field in fields:
-    row = tk.Frame(input_frame)
-    row.pack(fill=tk.X, pady=5)
+create_field('Start SCAT', scat_sites)
+create_field('End SCAT', scat_sites)
+create_field('Start Time', timeset)
+create_field('Models', models)
 
-    label = tk.Label(row, width=15, text=field, anchor='w')
-    label.pack(side=tk.LEFT)
-
-    if field in ["Start Scat", "End Scat"]:
-        combo = ttk.Combobox(row, values=scat_sites)
-        combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        entries[field] = combo
-    elif field == "Model":
-        combo = ttk.Combobox(row, values=["LSTM", "GRU", "Other"])
-        combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        entries[field] = combo
-    else:
-        entry = tk.Entry(row)
-        entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-        entries[field] = entry
+# === Routes Frame ===
+routes_frame = tk.LabelFrame(main_frame, text='Routes', padx=10, pady=10)
+routes_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
 
 # Route Display Placeholders
 for i in range(5):
-    tk.Label(routes_frame, text=f"Route {i+1}: [Details here]").pack(anchor='w')
+	tk.Label(routes_frame, text=f'Route {i+1}: [Details here]').pack(anchor='w')
 
 # === Generate Map Button ===
-def generate_map():
-    try:
-        subprocess.run(["python", "generateMap.py"], check=True)
-        map_path = os.path.abspath("map.html")
-        webbrowser.open(f"file://{map_path}")
-    except Exception as e:
-        print("Error generating or opening map:", e)
+def calculate_route():
 
-map_btn = tk.Button(main_frame, text="Generate Map", command=generate_map)
+	origin = entries['Start SCAT'].get()
+	goal = entries['End SCAT'].get()
+	#entries['Start Time'].get(),
+	#entries['Model'].get()
+
+	if origin == '':
+		# No origin set, alert user
+		tk.Label(routes_frame, text='No start SCAT set!').pack(anchor='w')
+		return
+
+	if goal == '':
+		# No goal set, alert user
+		tk.Label(routes_frame, text='No end SCAT set!').pack(anchor='w')
+		return
+
+	origin = int(origin)
+	goal = int(goal)
+
+	# Need to pass information from model into this
+	graph, locations = construct_graph.create_graph(scats_df)
+
+	problem = search.GraphProblem(origin, goal, graph)
+
+	# Result is search.Node and count is int
+	result, count = search.astar_search(problem, False)
+
+	if result is None:
+		# No path found, alert user
+		tk.Label(routes_frame, text='No path found!').pack(anchor='w')
+		return
+
+	path: list[search.Node] = result.solution()
+
+	tk.Label(routes_frame, text=f'Route: {path}').pack(anchor='w')
+
+	generateMap.generate_map(origin, goal, path, locations)
+
+	try:
+		map_path = os.path.abspath('map.html')
+		webbrowser.open(f'file://{map_path}')
+	except Exception as e:
+		print('Error generating or opening map:', e)
+
+map_btn = tk.Button(main_frame, text='Calculate route', command=calculate_route)
 map_btn.pack(pady=10)
 
 # Start GUI
