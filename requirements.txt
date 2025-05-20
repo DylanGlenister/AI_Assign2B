@@ -1,6 +1,3 @@
 numpy
 pandas
-ipykernel
-networkx
 folium
-pywebview

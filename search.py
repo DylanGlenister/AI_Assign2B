@@ -13,6 +13,7 @@ from collections import deque
 
 import numpy as np
 
+
 def distance(a: tuple, b: tuple):
 	"""The distance between two (x, y) points. From AIMA."""
 

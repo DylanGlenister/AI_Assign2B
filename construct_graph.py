@@ -5,7 +5,7 @@ import pandas as pd
 import search
 
 
-def create_graph(_df: pd.DataFrame):
+def create_graph(_df: pd.DataFrame, _debug = False):
 	'''Take the information from a dataframe and create a graph from it.'''
 
 	locations: dict[int, tuple[float, float]] = {}
@@ -44,50 +44,54 @@ def create_graph(_df: pd.DataFrame):
 	# Convert to a regular dictionary
 	edges: dict[int, dict[int, int]] = {node: dict(connected_nodes) for node, connected_nodes in edge_dict.items()}
 
-	return locations, edges
+	if _debug:
+		# Print basic graph info
+		print(f'Number of nodes (intersections): {len(locations)}\nNumber of edges (street connections): {len(edges)}')
 
-processed_data = pd.read_csv('./processed.csv')
+		# List all edges and their cost
+		for node, others in edges.items():
+			lat, long = locations[node]
+			print(f'{node:4} ({lat:.6f}, {long:.6f}): {{', end='')
+			for other, cost in others.items():
+				print(f'{other:4}: {cost}, ', end='')
+			print('}')
 
-locations, edges = create_graph(processed_data)
+	graph = search.Graph(edges)
+	graph.locations = locations
 
-# Print basic graph info
-print(f'Number of nodes (intersections): {len(locations)}\nNumber of edges (street connections): {len(edges)}')
+	return graph
 
-# List all edges and their cost
-for node, others in edges.items():
-	lat, long = locations[node]
-	print(f'{node:4} ({lat:.6f}, {long:.6f}): {{', end='')
-	for other, cost in others.items():
-		print(f'{other:4}: {cost}, ', end='')
-	print('}')
+def test():
+	processed_data = pd.read_csv('./processed.csv')
 
+	graph = create_graph(processed_data)
 
-method = search.select_method('DFS')
+	method = search.select_method('DFS')
 
-if method is None:
-	print("Incorrect method type, valid methods:\nDFS, BFS, GBFS, AS, CUS1, CUS2, IDS, BS")
-	quit()
+	if method is None:
+		print("Incorrect method type, valid methods:\nDFS, BFS, GBFS, AS, CUS1, CUS2, IDS, BS")
+		quit()
 
-graph = search.Graph(edges)
-graph.locations = locations
+	origin = 4030
+	goal = [970]
 
-origin = 4030
-goal = [970]
+	problem = search.GraphProblem(origin, goal, graph)
 
-problem = search.GraphProblem(origin, goal, graph)
+	result, count = method(problem, True)
 
-result, count = method(problem, True)
+	print('method=AS')
+	# \n
+	# Ouput goal node
+	print('goal=', goal, sep='', end=' | ')
 
-print('method=AS')
-# \n
-# Ouput goal node
-print('goal=', goal, sep='', end=' | ')
+	# Output number (length of path)
+	print('number of nodes=', count, sep='')
+	# \n
+	if (result is not None):
+		# Output path: list of nodes
+		print('path=', result.solution(), sep='')
+	else:
+		print('No path found!')
 
-# Output number (length of path)
-print('number of nodes=', count, sep='')
-# \n
-if (result is not None):
-	# Output path: list of nodes
-	print('path=', result.solution(), sep='')
-else:
-	print('No path found!')
+if __name__ == '__main__':
+	test()
