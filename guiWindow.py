@@ -1,34 +1,30 @@
 import tkinter as tk
 from tkinter import ttk
 import pandas as pd
-import webview
+import subprocess
+import webbrowser
+import os
 
 # Load SCATS reference list
 scats_df = pd.read_csv("scats_reference.csv")
-
-# Extract and sort SCAT site numbers
-scat_sites = sorted(scats_df['Site_Number'].unique().astype(str))  # Convert to string for tkinter
+scat_sites = sorted(scats_df['Site_Number'].unique().astype(str))
 
 # Create main window
 root = tk.Tk()
 root.title("Traffic-Based Route Guidance System")
-root.geometry("1000x600")
+root.geometry("500x600")
 
-# Left Frame
-left_frame = tk.Frame(root, width=400, height=600)
-left_frame.pack(side=tk.LEFT, fill=tk.Y)
+# Main Frame
+main_frame = tk.Frame(root)
+main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
 # Input Frame
-input_frame = tk.Frame(left_frame)
+input_frame = tk.Frame(main_frame)
 input_frame.pack(pady=20, padx=20)
 
 # Routes Frame
-routes_frame = tk.LabelFrame(left_frame, text="Routes", padx=10, pady=10)
+routes_frame = tk.LabelFrame(main_frame, text="Routes", padx=10, pady=10)
 routes_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 20))
-
-# Map Frame
-map_frame = tk.LabelFrame(root, text="Map", width=600, height=600)
-map_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
 
 # Input Fields with Dropdowns
 fields = ["Start Scat", "End Scat", "Start time", "Model"]
@@ -58,15 +54,17 @@ for field in fields:
 for i in range(5):
     tk.Label(routes_frame, text=f"Route {i+1}: [Details here]").pack(anchor='w')
 
-with open('./map.html', 'r', encoding='utf-8') as mapfile:
-    maphtml = mapfile.read()
+# === Generate Map Button ===
+def generate_map():
+    try:
+        subprocess.run(["python", "generateMap.py"], check=True)
+        map_path = os.path.abspath("map.html")
+        webbrowser.open(f"file://{map_path}")
+    except Exception as e:
+        print("Error generating or opening map:", e)
 
-# Map Placeholder
-#map_placeholder = tk.Label(map_frame, text="Map Display Area", bg="white")
-#map_placeholder.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
-
-webview.create_window("Fuck", html="./map.html")
-webview.start()
+map_btn = tk.Button(main_frame, text="Generate Map", command=generate_map)
+map_btn.pack(pady=10)
 
 # Start GUI
 root.mainloop()
