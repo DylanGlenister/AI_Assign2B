@@ -4,18 +4,14 @@ Assignment 2A Pathfinding algorithms.
 Uses code from AIMA Chapters 3-4
 """
 
-from collections import deque
-import sys
 import functools
 import heapq
 import re
+import sys
 import time
+from collections import deque
+
 import numpy as np
-
-def is_in(elt, seq):
-	"""Similar to (elt in seq), but compares with 'is', not '=='. From AIMA."""
-
-	return any(x is elt for x in seq)
 
 def distance(a: tuple, b: tuple):
 	"""The distance between two (x, y) points. From AIMA."""
@@ -136,8 +132,10 @@ class Problem:
 		state to self.goal or checks for state in self.goal if it is a
 		list, as specified in the constructor. Override this method if
 		checking against a single self.goal is not enough."""
+		# NOTE This is the bug that was causing pathfinding to not work
 		if isinstance(self.goal, list):
-			return is_in(state, self.goal)
+			#return any(x is state for x in self.goal)
+			return any(x == state for x in self.goal)
 		else:
 			return state == self.goal
 
@@ -672,5 +670,5 @@ def compute_average_runtime(_freq = 25000):
 	print("Average exection time accross ", _freq, " runs is ", sum / _freq)
 
 if __name__ == "__main__":
-	main(False, True)
+	main(True, True)
 	#compute_average_runtime()

@@ -72,16 +72,16 @@ graph = search.Graph(edges)
 graph.locations = locations
 
 origin = 4030
-goals = [4051]
+goal = [970]
 
-problem = search.GraphProblem(origin, goals, graph)
+problem = search.GraphProblem(origin, goal, graph)
 
 result, count = method(problem, True)
 
 print('method=AS')
 # \n
 # Ouput goal node
-print('goal=', goals, sep='', end=' | ')
+print('goal=', goal, sep='', end=' | ')
 
 # Output number (length of path)
 print('number of nodes=', count, sep='')
