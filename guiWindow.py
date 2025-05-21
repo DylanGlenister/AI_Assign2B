@@ -46,6 +46,7 @@ def create_field(_name: str, _values: list[str]):
 	label = tk.Label(row, width=15, text=_name, anchor='w')
 	label.pack(side=tk.LEFT)
 	combo = ttk.Combobox(row, values=_values)
+	combo.current(0)
 	combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
 	entries[_name] = combo
 
@@ -77,25 +78,26 @@ def calculate_route():
 	#entries['Start Time'].get(),
 	#entries['Model'].get()
 
+	# Input error checking
 	if origin == '':
-		# No origin set, alert user
 		route_labels[0].config(text=f'No start SCAT set!')
 		return
-
 	if goal == '':
-		# No goal set, alert user
 		route_labels[0].config(text=f'No end SCAT set!')
 		return
+	if origin == goal:
+		route_labels[0].config(text=f'Start and end SCATs cannot be the same!')
+		return
 
+	# Convert SCATs sites to ints
 	origin = int(origin)
 	goal = int(goal)
 
 	# Need to pass information from model into this
 	graph, locations = construct_graph.create_graph(scats_df)
-
 	problem = search.GraphProblem(origin, goal, graph)
 
-	# Result is search.Node and count is int
+	# Result is type search.Node
 	result, _ = search.astar_search(problem, False)
 
 	if result is None:
@@ -109,7 +111,7 @@ def calculate_route():
 	for i in range(5):
 		route_labels[i].config(text=f'Route {i+1}: {path}')
 
-	# Need to change this to pass a list of paths
+	# Need to change this to pass a list of 5 paths
 	generateMap.generate_map(origin, goal, path, locations)
 
 	try:
