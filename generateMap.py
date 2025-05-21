@@ -5,14 +5,17 @@ def generate_map(_start: int, _end: int, _path, _locations: dict[int, tuple[floa
 	start_pos = _locations[_start]
 	prev = start_pos
 	m = fm.Map(location=start_pos, zoom_start = 15)
-	fm.Marker(start_pos).add_to(m)
+	#fm.Marker(start_pos).add_to(m)
+	fm.Marker(start_pos, popup="Start", icon=fm.Icon(color='blue')).add_to(m)
 
 	for node in _path:
 		position = _locations[node]
 		fm.PolyLine((prev, position)).add_to(m)
 		prev = position
 
-	fm.Marker(_locations[_end]).add_to(m)
+	#fm.Marker(_locations[_end]).add_to(m)
+	fm.Marker(_locations[_end], popup="End", icon=fm.Icon(color='red')).add_to(m)
+
 
 	m.save('map.html')
 
