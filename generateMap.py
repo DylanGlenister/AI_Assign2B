@@ -1,6 +1,6 @@
 import folium as fm
 
-
+# Change to a list of 5 tuple with start, end, path, colour
 def generate_map(_start: int, _end: int, _path, _locations: dict[int, tuple[float, float]]):
 	start_pos = _locations[_start]
 	prev = start_pos
@@ -15,6 +15,19 @@ def generate_map(_start: int, _end: int, _path, _locations: dict[int, tuple[floa
 	fm.Marker(_locations[_end]).add_to(m)
 
 	m.save('map.html')
+
+def show_all_nodes(_raw_graph: tuple[dict[int, dict[int, int]], dict[int, tuple[float, float]]]):
+	m = fm.Map(location=(-37.80486 + 0.00142, 145.08093 + 0.00171), zoom_start = 15)
+
+	edges, locations = _raw_graph
+
+	# List all edges and their cost
+	for node, others in edges.items():
+		fm.Marker(locations[node]).add_to(m)
+		for other, cost in others.items():
+			fm.PolyLine((locations[node], locations[other])).add_to(m)
+
+	m.save('graph.html')
 
 def run_test():
 	Start = -37.80486 + 0.00142, 145.08093 + 0.00171

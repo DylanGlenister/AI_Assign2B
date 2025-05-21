@@ -59,7 +59,7 @@ def create_graph(_df: pd.DataFrame, _debug = False):
 	graph = search.Graph(edges)
 	graph.locations = locations
 
-	return graph, locations
+	return graph, (edges, locations)
 
 def test():
 	processed_data = pd.read_csv('./processed.csv')

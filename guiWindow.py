@@ -94,7 +94,8 @@ def calculate_route():
 	goal = int(goal)
 
 	# Need to pass information from model into this
-	graph, locations = construct_graph.create_graph(scats_df)
+	graph, raw_data = construct_graph.create_graph(scats_df)
+	_, locations = raw_data
 	problem = search.GraphProblem(origin, goal, graph)
 
 	# Result is type search.Node
@@ -113,6 +114,7 @@ def calculate_route():
 
 	# Need to change this to pass a list of 5 paths
 	generateMap.generate_map(origin, goal, path, locations)
+	#generateMap.show_all_nodes( raw_data)
 
 	try:
 		map_path = os.path.abspath('map.html')
@@ -128,3 +130,4 @@ root.mainloop()
 
 # Fucky path:
 # 2846 4273
+# 4273 4063

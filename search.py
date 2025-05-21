@@ -338,7 +338,7 @@ def depth_first_graph_search(_problem: GraphProblem, _debug) -> tuple[Node | Non
 	while frontier:
 		node = frontier.pop()
 		if _debug:
-			print(node, node.expand(_problem))
+			print(node, node.expand(problem=_problem))
 		if _problem.goal_test(node.state):
 			return node, len(explored)
 		explored.add(node.state)
