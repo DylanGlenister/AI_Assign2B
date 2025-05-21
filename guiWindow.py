@@ -96,7 +96,7 @@ def calculate_route():
 	problem = search.GraphProblem(origin, goal, graph)
 
 	# Result is search.Node and count is int
-	result, count = search.astar_search(problem, False)
+	result, _ = search.astar_search(problem, False)
 
 	if result is None:
 		# No path found, alert user

@@ -16,8 +16,6 @@ def generate_map(_start: int, _end: int, _path, _locations: dict[int, tuple[floa
 
 	m.save('map.html')
 
-	# NOTE This does not factor the offsets, which need to be applied in process_data.py
-
 def run_test():
 	Start = -37.80486 + 0.00142, 145.08093 + 0.00171
 	Connect = -37.82526 + 0.00142, 145.07758 + 0.00171

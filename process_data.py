@@ -33,21 +33,22 @@ raw_data.drop_duplicates(inplace=True)
 # east: -37.82529, 145.04387
 # west: -37.82518, 145.04301
 # north: -37.82505, 145.04346 (estimated by Claude)
-def fix_burwood_auburn_latitude(_latitude: float):
-	# Do it this funky way to avoid floating point nonsense
+def adjust_latitude(_latitude: float):
+	# Fix Burwood/Aurburn latitude
 	if _latitude == 0:
-		return -37.82505
+		return -37.82505 + 0.00142
 	else:
-		return _latitude
+		return _latitude + 0.00142
 
-def fix_burwood_auburn_longitude(_longitude: float):
+def adjust_longitude(_longitude: float):
+	# Fix Burwood/Aurburn longitude
 	if _longitude == 0:
-		return 145.04346
+		return 145.04346 + 0.00171
 	else:
-		return _longitude
+		return _longitude + 0.00171
 
-raw_data['Latitude'] = raw_data['Latitude'].apply(fix_burwood_auburn_latitude)
-raw_data['Longitude'] = raw_data['Longitude'].apply(fix_burwood_auburn_longitude)
+raw_data['Latitude'] = raw_data['Latitude'].apply(adjust_latitude)
+raw_data['Longitude'] = raw_data['Longitude'].apply(adjust_longitude)
 
 # Import site reference
 raw_reference = pd.read_csv(
