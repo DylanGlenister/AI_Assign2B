@@ -24,15 +24,11 @@ raw_data.rename(columns={
 
 # SCATS is the intersection ID
 # Location is [owner road] [direction from intersection] [other road in intersection]
+# We only care about the direction
 
 raw_data.drop_duplicates(inplace=True)
 
 # Fix Auburn N/Burwood intersection missing position
-# https://www.openstreetmap.org/way/1092802786#map=19/-37.823687/145.045020
-# south: -37.82542, 145.04346
-# east: -37.82529, 145.04387
-# west: -37.82518, 145.04301
-# north: -37.82505, 145.04346 (estimated by Claude)
 def adjust_latitude(_latitude: float):
 	# Fix Burwood/Aurburn latitude
 	if _latitude == 0:
@@ -97,7 +93,7 @@ streets, directions = process_location(extracted['Location'])
 extracted.insert(3, 'Street', pd.Series(streets))
 extracted.insert(4, 'Direction', pd.Series(directions))
 
-# Fix 4335 directions
+# Fix scat 4335 duplicated direction
 mask = extracted['Latitude'] == -37.80474
 extracted.loc[mask, 'Direction'] = 'SE'
 
