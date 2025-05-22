@@ -1,9 +1,8 @@
-from collections import defaultdict
-
-import pandas as pd
 import folium as fm
+import pandas as pd
 
 import search
+
 
 def get_edge_lookup():
 	'''Retrieves the data from the edge lookup file. Format is {(end, dir), start}.'''
