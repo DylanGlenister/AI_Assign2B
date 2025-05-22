@@ -50,18 +50,6 @@ def adjust_longitude(_longitude: float):
 raw_data['Latitude'] = raw_data['Latitude'].apply(adjust_latitude)
 raw_data['Longitude'] = raw_data['Longitude'].apply(adjust_longitude)
 
-# Fix 4335 directions
-
-# TO DROP
-# 4051 S
-# 2827 !S
-# 4030 W
-# 3662 W
-# 4821 !E
-# 4812
-# 4035 E
-# 3120 W
-
 # Import site reference
 raw_reference = pd.read_csv(
 	'./scats_reference.csv',
@@ -109,6 +97,12 @@ streets, directions = process_location(extracted['Location'])
 extracted.insert(3, 'Street', pd.Series(streets))
 extracted.insert(4, 'Direction', pd.Series(directions))
 
+# Fix 4335 directions
+mask = extracted['Latitude'] == -37.80474
+extracted.loc[mask, 'Direction'] = 'SE'
+
+dated = extracted.copy()
+
 def process_date(_dates: pd.Series):
 	days_of_week = []
 
@@ -122,11 +116,11 @@ def process_date(_dates: pd.Series):
 	#return dates, years, months, days, day_indexes, days_of_week
 	return days_of_week
 
-days_of_week = process_date(extracted['Date'])
-extracted.insert(8,'Day_of_week', days_of_week)
+days_of_week = process_date(dated['Date'])
+dated.insert(8,'Day_of_week', days_of_week)
 
 # Remove the location and date columns since they're no longer needed
-extracted.drop(columns=['Location', 'Date'], inplace=True)
+dated.drop(columns=['Location', 'Date'], inplace=True)
 
 def reconfigure(_df: pd.DataFrame):
 	# Create sequential IDs within each group
@@ -138,7 +132,53 @@ def reconfigure(_df: pd.DataFrame):
 
 	return _df_with_ids
 
-reconfigured = reconfigure(extracted)
+reconfigured = reconfigure(dated)
+
+def drop_pointless_sites(_df: pd.DataFrame):
+	'''Remove sites (edges) that do not connect to anything.'''
+	to_drop = [
+		(2827, 'N'),
+		(2827, 'E'),
+		(2827, 'W'),
+		(4051, 'S'),
+		(4030, 'W'),
+		(3662, 'W'),
+		(4821, 'N'),
+		(4821, 'W'),
+		(4821, 'S'),
+		(4812, 'S'),
+		(4812, 'SW'),
+		(4812, 'NE'),
+		(4270, 'W'),
+		(4270, 'S'),
+		(3180, 'E'),
+		(4057, 'E'),
+		(2200, 'N'),
+		(2200, 'E'),
+		(2200, 'S'),
+		(3126, 'E'),
+		(3682, 'E'),
+		(2000, 'E'),
+		(3685, 'E'),
+		(970, 'E'),
+		(970, 'S'),
+		(2846, 'N'),
+		(2846, 'NW'),
+		(2846, 'W'),
+		(4043, 'S'),
+		(3812, 'W'),
+		(3812, 'SE'),
+		(4043, 'S'),
+		(4035, 'E'),
+		(3120, 'W'),
+		(4263, 'S'),
+		(4266, 'N'),
+		(4266, 'S')
+	]
+
+	return _df.drop(index=to_drop)
+
+reduced = drop_pointless_sites(reconfigured)
 
 # Save dataframe to csv
-reconfigured.to_csv('./processed.csv')
+reduced.to_csv('./processed.csv')
