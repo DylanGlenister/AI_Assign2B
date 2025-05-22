@@ -20,7 +20,7 @@ def generate_map(_start: int, _end: int, _path, _locations: dict[int, tuple[floa
 	m.save('map.html')
 
 def show_all_nodes(_raw_graph: tuple[dict[int, dict[int, int]], dict[int, tuple[float, float]]]):
-	m = fm.Map(location=(-37.80486 + 0.00142, 145.08093 + 0.00171), zoom_start = 15)
+	m = fm.Map(location=(-37.82, 145.07), zoom_start=13)
 
 	edges, locations = _raw_graph
 
