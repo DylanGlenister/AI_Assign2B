@@ -50,6 +50,18 @@ def adjust_longitude(_longitude: float):
 raw_data['Latitude'] = raw_data['Latitude'].apply(adjust_latitude)
 raw_data['Longitude'] = raw_data['Longitude'].apply(adjust_longitude)
 
+# Fix 4335 directions
+
+# TO DROP
+# 4051 S
+# 2827 !S
+# 4030 W
+# 3662 W
+# 4821 !E
+# 4812
+# 4035 E
+# 3120 W
+
 # Import site reference
 raw_reference = pd.read_csv(
 	'./scats_reference.csv',

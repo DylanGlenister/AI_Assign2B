@@ -127,7 +127,3 @@ map_btn.pack(pady=10)
 
 # Start the GUI
 root.mainloop()
-
-# Fucky path:
-# 2846 4273
-# 4273 4063
