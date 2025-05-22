@@ -36,16 +36,16 @@ raw_data.drop_duplicates(inplace=True)
 def adjust_latitude(_latitude: float):
 	# Fix Burwood/Aurburn latitude
 	if _latitude == 0:
-		return -37.82505 + 0.00142
+		return -37.82505 + 0.0015
 	else:
-		return _latitude + 0.00142
+		return _latitude + 0.0015
 
 def adjust_longitude(_longitude: float):
 	# Fix Burwood/Aurburn longitude
 	if _longitude == 0:
-		return 145.04346 + 0.00171
+		return 145.04346 + 0.0013
 	else:
-		return _longitude + 0.00171
+		return _longitude + 0.0013
 
 raw_data['Latitude'] = raw_data['Latitude'].apply(adjust_latitude)
 raw_data['Longitude'] = raw_data['Longitude'].apply(adjust_longitude)
