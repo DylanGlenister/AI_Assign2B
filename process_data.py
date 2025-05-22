@@ -98,82 +98,33 @@ extracted.insert(3, 'Street', pd.Series(streets))
 extracted.insert(4, 'Direction', pd.Series(directions))
 
 def process_date(_dates: pd.Series):
-	#dates: list[str] = []
-	#years: list[int] = []
-	#months:list[int] = []
-	#days: list[int] = []
-	#day_indexes: list[int] = []
-	days_of_week: list[str | None] = []
+	days_of_week = []
 
 	for _, item in _dates.items():
 		# Import as a datetime object
 		date_obj = datetime.strptime(item, '%d/%m/%Y')
-		#dates.append(date_obj.strftime("%Y-%m-%d"))
-		#years.append(date_obj.year)
-		#months.append(date_obj.month)
-		#days.append(date_obj.day)
-		#day_indexes.append((date_obj.date() - date(2000, 1, 1)).days)
 		days_since_first_mon = (date_obj.date() - date(2000, 1, 3)).days % 7
-		match days_since_first_mon:
-			case 0:
-				day_of_week = 'Monday'
-			case 1:
-				day_of_week = 'Tuesday'
-			case 2:
-				day_of_week = 'Wednesday'
-			case 3:
-				day_of_week = 'Thursday'
-			case 4:
-				day_of_week = 'Friday'
-			case 5:
-				day_of_week = 'Saturday'
-			case 6:
-				day_of_week = 'Sunday'
-			case _:
-				day_of_week = None
-		days_of_week.append(day_of_week)
+
+		days_of_week.append(days_since_first_mon)
 
 	#return dates, years, months, days, day_indexes, days_of_week
 	return days_of_week
 
-# The only one of value might be day of week, but as an int
-#dates, years, months, days, date_indexes, days_of_week = process_date(extracted['Date'])
 days_of_week = process_date(extracted['Date'])
-#extracted['Date'] = dates
 extracted.insert(8,'Day_of_week', days_of_week)
-#extracted.insert(8, 'DayIndex', date_indexes)
-#extracted.insert(8,'Day', days)
-#extracted.insert(8,'Month', months)
-#extracted.insert(8,'Year', years)
 
 # Remove the location and date columns since they're no longer needed
 extracted.drop(columns=['Location', 'Date'], inplace=True)
 
 def reconfigure(_df: pd.DataFrame):
-	# Create a list to store IDs
-	ids = []
-
-	# Process each location group
-	for _, group in _df.groupby('Intersection', sort=False):
-		# For each row in this location group, assign sequential IDs
-		for i in range(len(group)):
-			ids.append(i)
-
-	# Add the IDs as a new column for use in the MultiIndex
+	# Create sequential IDs within each group
 	_df_with_ids = _df.copy()
-	_df_with_ids['ID'] = ids
+	_df_with_ids['ID'] = _df_with_ids.groupby(['SCATS', 'Direction', 'Day_of_week']).cumcount()
 
 	# Create the MultiIndex
-	index = pd.MultiIndex.from_arrays(
-		[_df_with_ids['SCATS'], _df_with_ids['Intersection'], _df_with_ids['ID']],
-		names=['SCATS', 'Intersection', 'ID']
-	)
+	_df_with_ids = _df_with_ids.set_index(['SCATS', 'Direction', 'Day_of_week', 'ID'])
 
-	# Drop the columns that are now in the index
-	stripped = _df_with_ids.drop(columns=['SCATS', 'Intersection', 'ID'])
-	stripped.set_index(index, inplace=True)
-
-	return stripped
+	return _df_with_ids
 
 reconfigured = reconfigure(extracted)
 
