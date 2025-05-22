@@ -1,7 +1,7 @@
 import folium as fm
 
 # Change to a list of 5 tuple with start, end, path, colour
-def generate_map(_start: int, _end: int, _path, _locations: dict[int, tuple[float, float]]):
+def generate_map(_start: int, _end: int, _path, _locations):
 	start_pos = _locations[_start]
 	prev = start_pos
 	m = fm.Map(location=start_pos, zoom_start = 15)
