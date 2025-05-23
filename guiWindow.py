@@ -107,7 +107,7 @@ def calculate_routes():
 	goal = int(goal)
 
 	# Will find 5 paths, return value will be a list
-	paths = route_finder.find_five_routes( origin, goal)
+	paths = route_finder.find_five_routes( origin, goal, time, model)
 
 	# Use enumerate to get an index
 	for i, path in enumerate(paths):

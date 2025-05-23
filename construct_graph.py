@@ -32,12 +32,13 @@ def get_locations() -> dict[int, tuple[float, float]]:
 	}
 	return average_positions
 
-def create_graph(_debug = False) -> search.Graph:
+def create_graph(_model, _debug = False) -> search.Graph:
 	'''Programmatically uses the information from the dataset to construct the graph.'''
 
 	edge_lookup = get_edge_lookup()
 
 	# Edge lookup will be used to query the model for the cost
+	#_model
 
 	# Add the edges to the graph
 	# Edges need to be in the format {start: {end, cost}}
@@ -68,7 +69,8 @@ def create_graph(_debug = False) -> search.Graph:
 	return graph
 
 def test():
-	graph = create_graph()
+	dummy_model = {}
+	graph = create_graph(dummy_model)
 
 	origin = 4030
 	goal = [970]

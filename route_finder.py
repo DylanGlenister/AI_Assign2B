@@ -1,10 +1,13 @@
 import construct_graph
 import search
 
+# New functions should be created for the different routes
 
-def find_route(_origin: int, _goal: int) -> None | list[search.Node]:
+def find_route(_origin: int, _goal: int, _time: str, _model: str) -> None | list[search.Node]:
 	# Need to pass information from model into this
-	graph = construct_graph.create_graph()
+	dummy_model = {}
+
+	graph = construct_graph.create_graph(dummy_model)
 	problem = search.GraphProblem(_origin, _goal, graph)
 
 	# Result is type search.Node
@@ -12,7 +15,7 @@ def find_route(_origin: int, _goal: int) -> None | list[search.Node]:
 
 	return result.solution() if result is not None else None
 
-def find_five_routes(_origin: int, _goal: int):
+def find_five_routes(_origin: int, _goal: int, _time: str, _model: str):
 	# Ideas for 5 paths
 	# 1. Default
 	# 2. Ignore traffic, shortest distance
@@ -21,9 +24,9 @@ def find_five_routes(_origin: int, _goal: int):
 	# 5. --- Please write an idea ---
 
 	return [
-		find_route(_origin, _goal),
-		find_route(_origin, _goal),
-		find_route(_origin, _goal),
-		find_route(_origin, _goal),
-		find_route(_origin, _goal)
+		find_route(_origin, _goal, _time, _model),
+		find_route(_origin, _goal, _time, _model),
+		find_route(_origin, _goal, _time, _model),
+		find_route(_origin, _goal, _time, _model),
+		find_route(_origin, _goal, _time, _model)
 	]
