@@ -18,6 +18,13 @@ def find_route(_origin: int, _goal: int):
 	return path
 
 def find_five_routes(_origin, _goal):
+	# Ideas for 5 paths
+	# 1. Default
+	# 2. Ignore traffic, shortest distance
+	# 3. Prioritise traffic, square the costs
+	# 4. --- Please write an idea ---
+	# 5. --- Please write an idea ---
+
 	return [
 		find_route(_origin, _goal),
 		find_route(_origin, _goal),
