@@ -1,3 +1,5 @@
+from typing import cast
+
 import folium as fm
 import pandas as pd
 
@@ -12,6 +14,21 @@ def get_edge_lookup():
 			end, dir, start = line.strip().split(',')
 			edge_lookup[(int(end), dir)] = int(start)
 	return edge_lookup
+
+def get_locations(_dataset: str) -> dict[int, tuple[float, float]]:
+	'''Get a dictionary of all SCATs sites and their locations.'''
+	scats_df = pd.read_csv(_dataset)
+	# Reduce the dataframe to only the needed unformation
+	sites = scats_df[['SCATS', 'Direction', 'Latitude', 'Longitude']].copy().drop_duplicates()
+	# Average the locations
+	grouped = sites[['SCATS', 'Latitude', 'Longitude']].groupby('SCATS').mean()
+	#average_positions = {int(scat): (pos['Latitude'], pos['Longitude']) for scat, pos in grouped.iterrows()}
+	# Need to do it this way to force the type checker into calming down
+	average_positions = {
+		int(scat_id): (cast(float, grouped.loc[scat_id, 'Latitude']), cast(float, grouped.loc[scat_id, 'Longitude']))
+		for scat_id in grouped.index
+	}
+	return average_positions
 
 def graph_visualisation(_df: pd.DataFrame):
 	'''Creates an openstreetmap file that displays the node/edge information.'''
@@ -51,13 +68,15 @@ def graph_visualisation(_df: pd.DataFrame):
 
 	m.save('graph.html')
 
-def create_graph(_df: pd.DataFrame, _debug = False):
+def create_graph(_dataset: str, _debug = False):
 	'''Programmatically uses the information from the dataset to construct the graph.'''
+
+	scats_df = pd.read_csv(_dataset)
 
 	edge_lookup = get_edge_lookup()
 
 	# Reduce the dataframe to only the needed unformation
-	sites = _df[['SCATS', 'Direction', 'Latitude', 'Longitude']].copy().drop_duplicates()
+	sites = scats_df[['SCATS', 'Direction', 'Latitude', 'Longitude']].copy().drop_duplicates()
 
 	# Average the locations
 	grouped = sites[['SCATS', 'Latitude', 'Longitude']].groupby('SCATS').mean()
@@ -67,7 +86,6 @@ def create_graph(_df: pd.DataFrame, _debug = False):
 
 	# Add the edges to the graph
 	# Edges need to be in the format {start: {end, cost}}
-
 	edges: dict[int, dict[int, int]] = {}
 
 	for (end, _), start in edge_lookup.items():
@@ -90,13 +108,13 @@ def create_graph(_df: pd.DataFrame, _debug = False):
 	graph = search.Graph(edges)
 	graph.locations = average_position
 
-	return graph, (edges, average_position)
+	return graph
 
 def test():
 	processed_data = pd.read_csv('./processed.csv')
 	graph_visualisation(processed_data)
 
-	graph, _ = create_graph(processed_data)
+	graph = create_graph('./processed.csv')
 
 	origin = 4030
 	goal = [970]

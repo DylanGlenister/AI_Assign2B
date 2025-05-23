@@ -5,14 +5,15 @@ from tkinter import ttk
 
 import pandas as pd
 
-import construct_graph
 import generateMap
-import search
+import route_finder
 
-# Load SCATS reference list
-scats_df = pd.read_csv('./processed.csv')
-scats_sorted = pd.Series(sorted(scats_df['SCATS'].unique()))
-scat_sites = scats_sorted.astype(str).tolist()
+
+def load_SCATs():
+	# Load SCATS reference list
+	scats_df = pd.read_csv('./processed.csv')
+	scats_sorted = pd.Series(sorted(scats_df['SCATS'].unique()))
+	return scats_sorted.astype(str).tolist()
 
 # Create main window
 root = tk.Tk()
@@ -50,8 +51,10 @@ def create_field(_name: str, _values: list[str]):
 	combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
 	entries[_name] = combo
 
-create_field('Start SCAT', scat_sites)
-create_field('End SCAT', scat_sites)
+SCATs = load_SCATs()
+
+create_field('Start SCAT', SCATs)
+create_field('End SCAT', SCATs)
 create_field('Start Time', timeset)
 create_field('Models', models)
 
@@ -93,28 +96,19 @@ def calculate_route():
 	origin = int(origin)
 	goal = int(goal)
 
-	# Need to pass information from model into this
-	graph, raw_data = construct_graph.create_graph(scats_df)
-	_, locations = raw_data
-	problem = search.GraphProblem(origin, goal, graph)
+	# Will find 5 paths, return value will be a list
+	paths = route_finder.find_five_routes(origin, goal)
 
-	# Result is type search.Node
-	result, _ = search.astar_search(problem, False)
+	# Use enumerate to get an index
+	for i, path in enumerate(paths):
+		if path is None:
+			# No path found, alert user
+			route_labels[0].config(text=f'No path found!')
 
-	if result is None:
-		# No path found, alert user
-		route_labels[0].config(text=f'No path found!')
-		return
-
-	path: list[search.Node] = result.solution()
-
-	# This for loop should encompass up to where astar is called
-	for i in range(5):
+		# Display route to user
 		route_labels[i].config(text=f'Route {i+1}: {path}')
 
-	# Need to change this to pass a list of 5 paths
-	generateMap.generate_map(origin, goal, path, locations)
-	#generateMap.show_all_nodes( raw_data)
+	generateMap.generate_map(origin, goal, paths)
 
 	try:
 		map_path = os.path.abspath('map.html')
