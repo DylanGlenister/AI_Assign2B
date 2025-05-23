@@ -7,13 +7,8 @@ import pandas as pd
 
 import generateMap
 import route_finder
+import shared
 
-
-def load_SCATs():
-	# Load SCATS reference list
-	scats_df = pd.read_csv('./processed.csv')
-	scats_sorted = pd.Series(sorted(scats_df['SCATS'].unique()))
-	return scats_sorted.astype(str).tolist()
 
 # Create main window
 root = tk.Tk()
@@ -40,8 +35,18 @@ models = ['LSTM', 'GRU', 'Other']
 # References to each of the input boxes
 entries: dict[str, ttk.Combobox] = {}
 
+def load_SCATs() -> list[str]:
+	'''Reads in the dataset and imports all the unique SCATs sites.'''
+	# Load SCATS reference list
+	scats_df = pd.read_csv(shared.PATH_DATASET)
+	scats_sorted = pd.Series(sorted(scats_df[shared.COLUMN_SCAT].unique()))
+	return scats_sorted.astype(str).tolist()
+
+SCATs = load_SCATs()
+
 # Input Fields with Dropdowns
 def create_field(_name: str, _values: list[str]):
+	'''Creat an input field.'''
 	row = tk.Frame(input_frame)
 	row.pack(fill=tk.X, pady=5)
 	label = tk.Label(row, width=15, text=_name, anchor='w')
@@ -51,12 +56,10 @@ def create_field(_name: str, _values: list[str]):
 	combo.pack(side=tk.LEFT, fill=tk.X, expand=True)
 	entries[_name] = combo
 
-SCATs = load_SCATs()
-
 create_field('Start SCAT', SCATs)
 create_field('End SCAT', SCATs)
 create_field('Start Time', timeset)
-create_field('Models', models)
+create_field('Model', models)
 
 # === Routes Display Box ===
 routes_frame = tk.LabelFrame(main_frame, text='Routes', padx=10, pady=10)
@@ -69,8 +72,15 @@ for i in range(5):
 	lbl.pack(anchor='w')
 	route_labels.append(lbl)
 
+def try_open_map(_path: str):
+	try:
+		map_path = os.path.abspath(_path)
+		webbrowser.open(f'file://{map_path}')
+	except Exception as e:
+		print('Error generating or opening map:', e)
+
 # === Generate Map Button ===
-def calculate_route():
+def calculate_routes():
 
 	# Clear all the labels
 	for i in range(5):
@@ -78,8 +88,8 @@ def calculate_route():
 
 	origin = entries['Start SCAT'].get()
 	goal = entries['End SCAT'].get()
-	#entries['Start Time'].get(),
-	#entries['Model'].get()
+	time = entries['Start Time'].get()
+	model = entries['Model'].get()
 
 	# Input error checking
 	if origin == '':
@@ -97,7 +107,7 @@ def calculate_route():
 	goal = int(goal)
 
 	# Will find 5 paths, return value will be a list
-	paths = route_finder.find_five_routes(origin, goal)
+	paths = route_finder.find_five_routes( origin, goal)
 
 	# Use enumerate to get an index
 	for i, path in enumerate(paths):
@@ -109,15 +119,17 @@ def calculate_route():
 		route_labels[i].config(text=f'Route {i+1}: {path}')
 
 	generateMap.generate_map(origin, goal, paths)
+	try_open_map(shared.PATH_ROUTEMAP)
 
-	try:
-		map_path = os.path.abspath('map.html')
-		webbrowser.open(f'file://{map_path}')
-	except Exception as e:
-		print('Error generating or opening map:', e)
+def display_graph():
+	generateMap.graph_visualisation()
+	try_open_map(shared.PATH_GRAPHMAP)
 
-map_btn = tk.Button(main_frame, text='Calculate route', command=calculate_route)
+map_btn = tk.Button(main_frame, text='Calculate route', command=calculate_routes)
 map_btn.pack(pady=10)
+
+graph_btn = tk.Button(main_frame, text='Display graph', command=display_graph)
+graph_btn.pack(pady=10)
 
 # Start the GUI
 root.mainloop()

@@ -2,22 +2,17 @@ import construct_graph
 import search
 
 
-def find_route(_origin: int, _goal: int):
+def find_route(_origin: int, _goal: int) -> None | list[search.Node]:
 	# Need to pass information from model into this
-	graph = construct_graph.create_graph('./processed.csv')
+	graph = construct_graph.create_graph()
 	problem = search.GraphProblem(_origin, _goal, graph)
 
 	# Result is type search.Node
 	result, _ = search.astar_search(problem, False)
 
-	if result is None:
-		return None
+	return result.solution() if result is not None else None
 
-	path: list[search.Node] = result.solution()
-
-	return path
-
-def find_five_routes(_origin, _goal):
+def find_five_routes(_origin: int, _goal: int):
 	# Ideas for 5 paths
 	# 1. Default
 	# 2. Ignore traffic, shortest distance

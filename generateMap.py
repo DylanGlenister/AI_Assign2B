@@ -1,12 +1,14 @@
 import folium as fm
+import pandas as pd
 
 import construct_graph
+import shared
 
 
 # Change to a list of 5 tuple with start, end, path, colour
 def generate_map(_start: int, _end: int, _paths):
 
-	locations = construct_graph.get_locations('./processed.csv')
+	locations = construct_graph.get_locations()
 
 	start_pos = locations[_start]
 	m = fm.Map(location=start_pos, zoom_start = 13)
@@ -23,20 +25,46 @@ def generate_map(_start: int, _end: int, _paths):
 			fm.PolyLine((prev, position)).add_to(m)
 			prev = position
 
-	m.save('map.html')
+	m.save(shared.PATH_ROUTEMAP)
 
-def show_all_nodes(_raw_graph: tuple[dict[int, dict[int, int]], dict[int, tuple[float, float]]]):
+def graph_visualisation():
+	'''Creates an openstreetmap file that displays the node/edge information.'''
+
+	scats_df = pd.read_csv(shared.PATH_DATASET)
+
+	edge_lookup = construct_graph.get_edge_lookup()
+
+	average_positions = construct_graph.get_locations()
+
+	# Reduce the dataframe to only the needed unformation
+	sites = scats_df[[shared.COLUMN_SCAT, shared.COLUMN_DIRECTION, shared.COLUMN_LATITUDE, shared.COLUMN_LONGITUDE]].copy().drop_duplicates()
+
+	site_locations: dict[tuple[int, str], tuple[float, float]] = {}
+
 	m = fm.Map(location=(-37.82, 145.07), zoom_start=13)
 
-	edges, locations = _raw_graph
+	for _, row in sites.iterrows():
+		scats: int = row[shared.COLUMN_SCAT]
+		direction: str = row[shared.COLUMN_DIRECTION]
+		latitude: float = row[shared.COLUMN_LATITUDE]
+		longitude: float = row[shared.COLUMN_LONGITUDE]
 
-	# List all edges and their cost
-	for node, others in edges.items():
-		fm.Marker(locations[node]).add_to(m)
-		for other, cost in others.items():
-			fm.PolyLine((locations[node], locations[other])).add_to(m)
+		site_locations[(scats, direction)] = (latitude, longitude)
 
-	m.save('graph.html')
+		# Find if a site is present in the lookup table
+		present = any(end == scats and dir == direction for (end, dir), _ in edge_lookup.items())
+
+		# Display the sites on the map, these are the edges
+		fm.Marker(
+			(latitude, longitude),
+			tooltip=f'{scats}:{direction}',
+			icon=fm.Icon(color='blue' if present else 'red')
+		).add_to(m)
+
+	for end, start in edge_lookup.items():
+		fm.PolyLine((site_locations[end], average_positions[start])).add_to(m)
+
+	m.save(shared.PATH_GRAPHMAP)
 
 def run_test():
 	Start = -37.80486 + 0.00142, 145.08093 + 0.00171
@@ -50,7 +78,7 @@ def run_test():
 	fm.Marker(End).add_to(m)
 
 	# Display the map
-	m.save('map.html')
+	m.save('test_map.html')
 
 if __name__ == '__main__':
 	run_test()
