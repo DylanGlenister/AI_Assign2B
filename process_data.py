@@ -119,6 +119,19 @@ dated.insert(8,'Day_of_week', days_of_week)
 # Remove the location and date columns since they're no longer needed
 dated.drop(columns=['Location', 'Date'], inplace=True)
 
+def fix_times(_df: pd.DataFrame):
+	changes = {}
+
+	for hour in range(0,24):
+		for minute in range(0,46,15):
+			old = f'{hour}:{minute:0=2}'
+			new = f'{hour:0=2}:{minute:0=2}'
+			changes[old] = new
+
+	return _df.rename(columns=changes)
+
+retimed = fix_times(dated)
+
 def reconfigure(_df: pd.DataFrame) -> pd.DataFrame:
 	# Create sequential IDs within each group
 	_df_with_ids = _df.copy()
@@ -129,7 +142,7 @@ def reconfigure(_df: pd.DataFrame) -> pd.DataFrame:
 
 	return _df_with_ids
 
-reconfigured = reconfigure(dated)
+reconfigured = reconfigure(retimed)
 
 def drop_pointless_sites(_df: pd.DataFrame) -> pd.DataFrame:
 	'''Remove sites (edges) that do not connect to anything.'''
