@@ -138,7 +138,7 @@ def reconfigure(_df: pd.DataFrame) -> pd.DataFrame:
 	_df_with_ids['ID'] = _df_with_ids.groupby([shared.COLUMN_SCAT, shared.COLUMN_DIRECTION, 'Day_of_week']).cumcount()
 
 	# Create the MultiIndex
-	_df_with_ids = _df_with_ids.set_index([shared.COLUMN_SCAT, shared.COLUMN_DIRECTION, 'Day_of_week', 'ID'])
+	_df_with_ids = _df_with_ids.set_index([shared.COLUMN_SCAT, shared.COLUMN_DIRECTION, 'ID', 'Day_of_week'])
 
 	return _df_with_ids
 
@@ -185,6 +185,10 @@ def drop_pointless_sites(_df: pd.DataFrame) -> pd.DataFrame:
 		(4266, 'N'),
 		(4266, 'S')
 	]
+
+	# Sort the index if it isn't already sorted
+	if not _df.index.is_monotonic_increasing:
+		_df = _df.sort_index()
 
 	return _df.drop(index=to_drop)
 
