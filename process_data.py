@@ -48,52 +48,42 @@ def adjust_longitude(_longitude: float) -> float:
 raw_data[shared.COLUMN_LATITUDE] = raw_data[shared.COLUMN_LATITUDE].apply(adjust_latitude)
 raw_data[shared.COLUMN_LONGITUDE] = raw_data[shared.COLUMN_LONGITUDE].apply(adjust_longitude)
 
-# Import site reference
-raw_reference = pd.read_csv(
-	'./scats_reference.csv',
-	names=[shared.COLUMN_SCAT, 'Intersection', 'Site_Type'],
-	header=0,
-	dtype={
-		shared.COLUMN_SCAT: np.int32,
-		'Intersection': str,
-		'Site_Type': str
-	}
-)
+## Import site reference
+#raw_reference = pd.read_csv(
+#	'./scats_reference.csv',
+#	names=[shared.COLUMN_SCAT, 'Intersection', 'Site_Type'],
+#	header=0,
+#	dtype={
+#		shared.COLUMN_SCAT: np.int32,
+#		'Intersection': str,
+#		'Site_Type': str
+#	}
+#)
 
-raw_reference.drop_duplicates(inplace=True)
-# Remove any site that isn't an intersection (rest are unused)
-raw_reference = raw_reference[raw_reference.Site_Type == 'INT']
-raw_reference.drop(columns={'Site_Type'}, inplace=True)
+#raw_reference.drop_duplicates(inplace=True)
+## Remove any site that isn't an intersection (rest are unused)
+#raw_reference = raw_reference[raw_reference.Site_Type == 'INT']
+#raw_reference.drop(columns={'Site_Type'}, inplace=True)
 
-# Perform an inner merge to keep only SCATS sites present in both tables
-merged_df = pd.merge(raw_reference, raw_data, on=shared.COLUMN_SCAT, how='inner')
+## Perform an inner merge to keep only SCATS sites present in both tables
+#merged_df = pd.merge(raw_reference, raw_data, on=shared.COLUMN_SCAT, how='inner')
 
 # Extract location information
-extracted = merged_df.copy()
+extracted = raw_data.copy()
 
-def process_location(_locations: pd.Series) -> tuple[list[str], list[str]]:
-	streets: list[str] = []
+def process_location(_locations: pd.Series) -> list[str]:
 	directions: list[str] = []
 
 	for _, item in _locations.items():
-		parts: list[str] = re.split(' of ', item, flags=re.IGNORECASE)
-		first_part = parts[0]
-
-		# Get all words in the first part
-		words = first_part.split()
-
-		# Last word is the direction, everything before is the street
-		direction = words[-1]
-		street = ' '.join(words[:-1])
-
-		streets.append(street)
+		half: list[str] = re.split(' of ', item, flags=re.IGNORECASE)
+		# Get the last word in the first half
+		direction = half[0].split()[-1]
 		directions.append(direction)
 
-	return streets, directions
+	return directions
 
-streets, directions = process_location(extracted['Location'])
-extracted.insert(3, 'Street', pd.Series(streets))
-extracted.insert(4, shared.COLUMN_DIRECTION, pd.Series(directions))
+directions = process_location(extracted['Location'])
+extracted.insert(2, shared.COLUMN_DIRECTION, pd.Series(directions))
 
 # Fix scat 4335 duplicated direction
 mask = extracted[shared.COLUMN_LATITUDE] == -37.80474
