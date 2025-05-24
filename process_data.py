@@ -1,7 +1,6 @@
 import re
 from datetime import date, datetime
 
-import numpy as np
 import pandas as pd
 
 import shared
@@ -124,13 +123,9 @@ retimed = fix_times(dated)
 
 def reconfigure(_df: pd.DataFrame) -> pd.DataFrame:
 	# Create sequential IDs within each group
-	_df_with_ids = _df.copy()
-	_df_with_ids['ID'] = _df_with_ids.groupby([shared.COLUMN_SCAT, shared.COLUMN_DIRECTION, 'Day_of_week']).cumcount()
-
+	_df['ID'] = _df.groupby([shared.COLUMN_SCAT, shared.COLUMN_DIRECTION, 'Day_of_week']).cumcount()
 	# Create the MultiIndex
-	_df_with_ids = _df_with_ids.set_index([shared.COLUMN_SCAT, shared.COLUMN_DIRECTION, 'ID', 'Day_of_week'])
-
-	return _df_with_ids
+	return _df.set_index([shared.COLUMN_SCAT, shared.COLUMN_DIRECTION, 'ID', 'Day_of_week'])
 
 reconfigured = reconfigure(retimed)
 
