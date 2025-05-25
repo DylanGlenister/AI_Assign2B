@@ -200,12 +200,12 @@ def predict_traffic(model, scats_ds, scats, direction, day, time_str, seq_len, d
 # === Main =====================================================================
 if __name__ == "__main__":
     MODE = "load"       # Options: "new" or "load"
-    RNN_TYPE = "GRU"    # Options: "GRU" or "LSTM"
+    RNN_TYPE = "LSTM"    # Options: "GRU" or "LSTM"
     MODEL_PATH = f"scats_{RNN_TYPE}.pt"
 
     CSV = "processed.csv"
     SEQ_LEN = 24
-    EPOCHS = 10
+    EPOCHS = 50
     BATCH = 64
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -237,6 +237,6 @@ if __name__ == "__main__":
     scats_id = "3804"
     direction = "W"
     day_of_week = 2
-    time_of_day = "15:45"
+    time_of_day = "05:45"
     pred = predict_traffic(model, ds, scats_id, direction, day_of_week, time_of_day, SEQ_LEN, DEVICE)
     print("Predicted traffic:", pred)
