@@ -1,5 +1,6 @@
 import datetime
 import os
+import math
 
 import numpy as np
 import pandas as pd
@@ -86,7 +87,7 @@ class SCATSDataset:
 		n_train = int(0.8 * n)
 		self.training_data, self.validation_data = random_split(full, [n_train, n - n_train])
 
-# === Model =====================================================================
+# === Models ====================================================================
 class SCATSTrafficRNN(nn.Module):
 	def __init__(self, num_locations, rnn_type='LSTM',
 				 embedding_dim=32, hidden_size=128, num_layers=2, dropout=0.2):
@@ -102,7 +103,6 @@ class SCATSTrafficRNN(nn.Module):
 		else:
 			print('not implemented')
 			raise NotImplementedError(f'RNN type "{rnn_type}" is not supported')
-			# TODO call third model class here
 
 		self.drop = nn.Dropout(dropout)
 		self.fc1 = nn.Linear(hidden_size, hidden_size//2)
@@ -123,6 +123,89 @@ class SCATSTrafficRNN(nn.Module):
 		h = self.act(self.fc1(h))
 		h = self.drop(h)
 		return self.fc2(h).squeeze(-1)
+
+class PositionalEncoding(nn.Module):
+	def __init__(self, d_model, max_len=1000):
+		super().__init__()
+		pe = torch.zeros(max_len, d_model)
+		position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+		div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-math.log(10000.0) / d_model))
+		pe[:, 0::2] = torch.sin(position * div_term)
+		pe[:, 1::2] = torch.cos(position * div_term)
+		pe = pe.unsqueeze(0).transpose(0, 1)
+		self.register_buffer('pe', pe)
+
+	def forward(self, x):
+		return x + self.pe[:x.size(0), :]
+
+class SCATSTrafficTransformer(nn.Module):
+	def __init__(self, num_locations, embedding_dim=64, num_heads=8, num_layers=4,
+				 hidden_dim=256, dropout=0.2, max_seq_len=100):
+		super().__init__()
+
+		# Ensure embedding_dim is divisible by num_heads
+		assert embedding_dim % num_heads == 0, f"embedding_dim ({embedding_dim}) must be divisible by num_heads ({num_heads})"
+
+		self.embedding_dim = embedding_dim
+		self.loc_embed = nn.Embedding(num_locations, embedding_dim)
+
+		# Input projection: 5 features -> embedding_dim
+		self.input_projection = nn.Linear(5, embedding_dim)
+
+		# Positional encoding
+		self.pos_encoding = PositionalEncoding(embedding_dim, max_seq_len)
+
+		# Transformer encoder layers
+		encoder_layer = nn.TransformerEncoderLayer(
+			d_model=embedding_dim,
+			nhead=num_heads,
+			dim_feedforward=hidden_dim,
+			dropout=dropout,
+			batch_first=True
+		)
+		self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
+
+		# Output layers
+		self.dropout = nn.Dropout(dropout)
+		self.fc1 = nn.Linear(embedding_dim * 2, embedding_dim)  # *2 because we concat location embedding
+		self.fc2 = nn.Linear(embedding_dim, embedding_dim // 2)
+		self.fc3 = nn.Linear(embedding_dim // 2, 1)
+		self.act = nn.ReLU()
+
+	def forward(self, x_time, x_loc, loc_dropout=0.1, is_training=True):
+		B, T, _ = x_time.shape
+
+		# Project input features to embedding dimension
+		x_proj = self.input_projection(x_time)  # [B, T, embedding_dim]
+
+		# Add positional encoding
+		x_proj = x_proj.transpose(0, 1)  # [T, B, embedding_dim]
+		x_proj = self.pos_encoding(x_proj)
+		x_proj = x_proj.transpose(0, 1)  # [B, T, embedding_dim]
+
+		# Apply transformer
+		transformer_out = self.transformer(x_proj)  # [B, T, embedding_dim]
+
+		# Global average pooling over sequence dimension
+		sequence_repr = transformer_out.mean(dim=1)  # [B, embedding_dim]
+
+		# Location embedding
+		le = self.loc_embed(x_loc)  # [B, embedding_dim]
+		if is_training and loc_dropout > 0:
+			mask = (torch.rand(B, device=le.device) > loc_dropout).float().unsqueeze(1)
+			le = le * mask
+
+		# Concatenate sequence representation with location embedding
+		combined = torch.cat([sequence_repr, le], dim=1)  # [B, embedding_dim * 2]
+
+		# Final prediction layers
+		h = self.dropout(combined)
+		h = self.act(self.fc1(h))
+		h = self.dropout(h)
+		h = self.act(self.fc2(h))
+		h = self.dropout(h)
+
+		return self.fc3(h).squeeze(-1)
 
 class SCATSPredictor:
 	'''This class contains the model and is used for saving, loading, training, and predicting.'''
@@ -158,9 +241,12 @@ class SCATSPredictor:
 	def train_model(self, train_loader, val_loader, epochs=10, lr=1e-3):
 		print('Training model...')
 
-		self.model = SCATSTrafficRNN(num_locations=self.ds.num_locations, rnn_type=self.type)
+		if self.type == 'TFMR':
+			self.model = SCATSTrafficTransformer(num_locations=self.ds.num_locations)
+		else:
+			self.model = SCATSTrafficRNN(num_locations=self.ds.num_locations, rnn_type=self.type)
 
-		print(f'Using Model: {self.model.rnn.__class__.__name__}')
+		print(f'Using Model: {self.model.__class__.__name__}')
 		print(f'starting training at {datetime.datetime.now()}')
 		self.model.to(self.DEVICE)
 		opt = optim.Adam(self.model.parameters(), lr=lr)
@@ -190,7 +276,6 @@ class SCATSPredictor:
 			print(f'completed epoch at {datetime.datetime.now()}')
 			sched.step(vl/len(val_loader))
 		print(f'Training complete at {datetime.datetime.now()}')
-		# torch.save(model.state_dict(), f'scats_{model.rnn.__class__.__name__}.pt')
 
 	# === Prediction Functions =======================================================
 	def create_prediction_input(self, scats_ds, scats, direction, day, time_str):
@@ -236,7 +321,11 @@ class SCATSPredictor:
 			return self.model(t, l, is_training=False).item()
 
 	def load(self, path):
-		self.model = SCATSTrafficRNN(num_locations=self.ds.num_locations, rnn_type=self.type)
+		if self.type == 'TFMR':
+			self.model = SCATSTrafficTransformer(num_locations=self.ds.num_locations)
+		else:
+			self.model = SCATSTrafficRNN(num_locations=self.ds.num_locations, rnn_type=self.type)
+
 		self.model.load_state_dict(torch.load(path, map_location=self.DEVICE))
 		self.model.to(self.DEVICE)
 
@@ -261,10 +350,18 @@ if __name__ == '__main__':
 	day_of_week = 2
 	time_of_day = '05:45'
 
-	predictor = PreLoadedPredictor('LSTM', day_of_week, time_of_day)
+	# Test different models
+	models = ['LSTM', 'GRU', 'TFMR']
 
-	# Example prediction
-	scats_id = '3804'
-	direction = 'W'
-	pred = predictor.query(scats_id, direction)
-	print('Predicted traffic:', pred)
+	for model_type in models:
+		print(f"\n=== Testing {model_type} Model ===")
+		try:
+			predictor = PreLoadedPredictor(model_type, day_of_week, time_of_day)
+
+			# Example prediction
+			scats_id = '3804'
+			direction = 'W'
+			pred = predictor.query(scats_id, direction)
+			print(f'Predicted traffic for {model_type}: {pred}')
+		except Exception as e:
+			print(f'Error with {model_type}: {e}')

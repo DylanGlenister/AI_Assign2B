@@ -30,7 +30,7 @@ for hour in range(24):
 		timeset.append(f'{hour:0=2}:{minute:0=2}')
 
 # A list of the available models
-models = ['LSTM', 'GRU', 'Other']
+models = ['LSTM', 'GRU', 'TFMR']
 
 # References to each of the input boxes
 entries: dict[str, ttk.Combobox] = {}
