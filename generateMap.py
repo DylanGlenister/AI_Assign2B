@@ -33,12 +33,12 @@ def generate_map(_start: int, _end: int, _paths, _colours: list[tuple[str, str]]
 
 	m.save(shared.PATH_ROUTEMAP)
 
-def graph_visualisation():
+def graph_visualisation(_model: str):
 	'''Creates an openstreetmap file that displays the node/edge information.'''
 
 	scats_df = pd.read_csv(shared.PATH_DATASET)
 
-	model = PreLoadedPredictor('LSTM', 0, '10:00')
+	model = PreLoadedPredictor(_model, 0, '10:00')
 
 	edge_lookup = construct_graph.get_edge_lookup()
 

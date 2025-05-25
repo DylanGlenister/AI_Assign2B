@@ -131,7 +131,8 @@ def calculate_routes():
 	try_open_map(shared.PATH_ROUTEMAP)
 
 def display_graph():
-	generateMap.graph_visualisation()
+	model = entries['Model'].get()
+	generateMap.graph_visualisation(model)
 	try_open_map(shared.PATH_GRAPHMAP)
 
 map_btn = tk.Button(main_frame, text='Calculate route', command=calculate_routes)
