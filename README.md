@@ -1,7 +1,46 @@
 # Assignment 2B
 ## How to use
-TBD.
-## Machine Learning and Software Integration
+### Setup
+#### Create the virtual environment.
+```bash
+python -m venv .venv
+```
+#### Activate the virtual envionment.
+- Windows:
+```bash
+.\.venv\Scripts\Activate.ps1
+```
+- Linux, MacOS
+```bash
+source ./.venv/bin/activate
+```
+#### Install the requirements
+```bash
+pip install -r requirements.txt
+```
+#### Select the environment
+1. With the any python file open, at the bottom right click the text that says the python version (the right one).
+2. Select the virtual environemnt you just created, you may need to reload visual studio.
+
+### Running the project
+While the current directory as the root of the project:
+```bash
+python guiWindow.py
+```
+#### While in the GUI
+1. Select a SCATS site to start the pathfinding from.
+2. Select a SCATS site to end the pathfinding at.
+3. Select a time to conduct the pathfinding at.
+4. Select a model to use for traffic prediction.
+5. Press the button labeled "Calculate route".
+
+The program will calculate five different routes, displaying the result as text on the gui window.
+
+Then it will open a browser tab with the paths all displayed graphically on a map.
+
+You can also press the "Display graph" button to have the program use the currently selected model to create a visual of all the avaiable sites and edges, with the edges having their estimated traffic displayed as a hue shift, the more red, the more traffic.
+
+## Project Description: Machine Learning and Software Integration
 - Due 11:59pm Sunday 25 May 2025 (Week 11)
 - Contributes 50% to your Assignment 2 result.
 - Group of 3-4 students
