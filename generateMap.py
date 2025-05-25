@@ -3,10 +3,11 @@ import pandas as pd
 
 import construct_graph
 import shared
+from RNNModels import PreLoadedPredictor
 
 
 # Change to a list of 5 tuple with start, end, path, colour
-def generate_map(_start: int, _end: int, _paths):
+def generate_map(_start: int, _end: int, _paths, _colours: list[tuple[str, str]]):
 
 	locations = construct_graph.get_locations()
 
@@ -18,11 +19,16 @@ def generate_map(_start: int, _end: int, _paths):
 	fm.Marker(locations[_end], popup="End", icon=fm.Icon(color='red')).add_to(m)
 
 	# At lines connecting all the nodes in the path
-	for path in _paths:
+	for i, path in enumerate(_paths):
 		prev = start_pos
 		for node in path:
 			position = locations[node]
-			fm.PolyLine((prev, position)).add_to(m)
+			_, colour = _colours[i]
+			fm.PolyLine(
+				(prev, position),
+				color=colour,
+				weight=6
+			).add_to(m)
 			prev = position
 
 	m.save(shared.PATH_ROUTEMAP)
@@ -31,6 +37,8 @@ def graph_visualisation():
 	'''Creates an openstreetmap file that displays the node/edge information.'''
 
 	scats_df = pd.read_csv(shared.PATH_DATASET)
+
+	model = PreLoadedPredictor('LSTM', 0, '10:00')
 
 	edge_lookup = construct_graph.get_edge_lookup()
 
@@ -61,8 +69,28 @@ def graph_visualisation():
 			icon=fm.Icon(color='blue' if present else 'red')
 		).add_to(m)
 
-	for end, start in edge_lookup.items():
-		fm.PolyLine((site_locations[end], average_positions[start])).add_to(m)
+	def colour_lookup(cost):
+		if cost > 200:
+			return 'red'
+		elif cost > 150:
+			return 'orange'
+		elif cost > 100:
+			return 'yellow'
+		elif cost > 75:
+			return 'green'
+		elif cost > 30:
+			return 'blue'
+		else:
+			return 'purple'
+
+	for (end, direction), start in edge_lookup.items():
+		cost = model.query(end, direction)
+
+		fm.PolyLine(
+			locations=(site_locations[(end, direction)], average_positions[start]),
+			color=colour_lookup(cost),
+			weight=6
+		).add_to(m)
 
 	m.save(shared.PATH_GRAPHMAP)
 

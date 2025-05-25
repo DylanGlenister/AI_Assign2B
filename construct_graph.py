@@ -33,8 +33,21 @@ def get_locations() -> dict[int, tuple[float, float]]:
 	}
 	return average_positions
 
-def create_graph(_model: PreLoadedPredictor, _debug = False) -> search.Graph:
-	'''Programmatically uses the information from the dataset to construct the graph.'''
+def create_graph(_model: PreLoadedPredictor, _variant=0, _debug = False) -> search.Graph:
+	'''Programmatically uses the information from the dataset to construct the graph.
+
+		Parameters
+		----------
+		_model : PreLoadedPredictor
+			The model being used.
+		_variant : int, optional
+			Changes how the graph is created.
+			0: Nothing
+			1: Ignore cost
+			2: Square cost
+		_debug : bool, optional
+			Prints debug information to the console.
+	'''
 
 	edge_lookup = get_edge_lookup()
 
@@ -47,7 +60,14 @@ def create_graph(_model: PreLoadedPredictor, _debug = False) -> search.Graph:
 	for (end, direction), start in edge_lookup.items():
 		if start not in edges:
 			edges[start] = {}
-		edges[start][end] = _model.query(end, direction)
+		if _variant == 1:
+			edges[start][end] = 1
+		if _variant == 2:
+			edges[start][end] = _model.query(end, direction) ** 2
+		if _variant == 3:
+			edges[start][end] = _model.query(end, direction) ** 4
+		else:
+			edges[start][end] = _model.query(end, direction)
 
 	average_positions = get_locations()
 

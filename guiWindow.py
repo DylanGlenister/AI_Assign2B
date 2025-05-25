@@ -13,7 +13,7 @@ import shared
 # Create main window
 root = tk.Tk()
 root.title('Traffic-Based Route Guidance System')
-root.geometry('500x600')
+root.geometry('800x600')
 
 # === Main Frame ===
 main_frame = tk.Frame(root)
@@ -109,6 +109,14 @@ def calculate_routes():
 	# Will find 5 paths, return value will be a list
 	paths = route_finder.find_five_routes( origin, goal, time, model)
 
+	route_colours = [
+		('red', '#FF0000'),
+		('purple', "#AA4CE9"),
+		('green', '#32C032'),
+		('blue', '#2F3CF0'),
+		('cyan', '#5CB9F7')
+	]
+
 	# Use enumerate to get an index
 	for i, path in enumerate(paths):
 		if path is None:
@@ -116,9 +124,10 @@ def calculate_routes():
 			route_labels[0].config(text=f'No path found!')
 
 		# Display route to user
-		route_labels[i].config(text=f'Route {i+1}: {path}')
+		colour_label, _ = route_colours[i]
+		route_labels[i].config(text=f'Route {i+1} ({colour_label}): {path}')
 
-	generateMap.generate_map(origin, goal, paths)
+	generateMap.generate_map(origin, goal, paths, route_colours)
 	try_open_map(shared.PATH_ROUTEMAP)
 
 def display_graph():
