@@ -5,7 +5,7 @@
 ```bash
 python -m venv .venv
 ```
-#### Activate the virtual envionment.
+#### Activate the virtual environment.
 - Windows:
 ```bash
 .\.venv\Scripts\Activate.ps1
@@ -20,7 +20,7 @@ pip install -r requirements.txt
 ```
 #### Select the environment
 1. With the any python file open, at the bottom right click the text that says the python version (the right one).
-2. Select the virtual environemnt you just created, you may need to reload visual studio.
+2. Select the virtual environment you just created, you may need to reload visual studio.
 
 ### Running the project
 While the current directory as the root of the project:
