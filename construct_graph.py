@@ -4,6 +4,7 @@ import pandas as pd
 
 import search
 import shared
+from RNNModels import PreLoadedPredictor
 
 
 def get_edge_lookup() -> dict[tuple[int, str], int]:
@@ -32,22 +33,21 @@ def get_locations() -> dict[int, tuple[float, float]]:
 	}
 	return average_positions
 
-def create_graph(_model, _debug = False) -> search.Graph:
+def create_graph(_model: PreLoadedPredictor, _debug = False) -> search.Graph:
 	'''Programmatically uses the information from the dataset to construct the graph.'''
 
 	edge_lookup = get_edge_lookup()
 
 	# Edge lookup will be used to query the model for the cost
-	#_model
 
 	# Add the edges to the graph
 	# Edges need to be in the format {start: {end, cost}}
 	edges: dict[int, dict[int, int]] = {}
 
-	for (end, _), start in edge_lookup.items():
+	for (end, direction), start in edge_lookup.items():
 		if start not in edges:
 			edges[start] = {}
-		edges[start][end] = 1
+		edges[start][end] = _model.query(end, direction)
 
 	average_positions = get_locations()
 
@@ -69,7 +69,7 @@ def create_graph(_model, _debug = False) -> search.Graph:
 	return graph
 
 def test():
-	dummy_model = {}
+	dummy_model = PreLoadedPredictor('LSTM', 0, '8:30')
 	graph = create_graph(dummy_model)
 
 	origin = 4030
