@@ -38,7 +38,7 @@ entries: dict[str, ttk.Combobox] = {}
 def load_SCATs() -> list[str]:
 	'''Reads in the dataset and imports all the unique SCATs sites.'''
 	# Load SCATS reference list
-	scats_df = pd.read_csv(shared.PATH_DATASET)
+	scats_df = pd.read_csv(shared.PATH_PROCESSED_DATASET)
 	scats_sorted = pd.Series(sorted(scats_df[shared.COLUMN_SCAT].unique()))
 	return scats_sorted.astype(str).tolist()
 

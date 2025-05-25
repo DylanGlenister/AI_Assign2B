@@ -210,8 +210,8 @@ class SCATSTrafficTransformer(nn.Module):
 class SCATSPredictor:
 	'''This class contains the model and is used for saving, loading, training, and predicting.'''
 
-	def __init__(self, dataset=shared.PATH_DATASET, type='LSTM'):
-		MODEL_PATH = f'scats_{type}.pt'
+	def __init__(self, dataset=shared.PATH_PROCESSED_DATASET, type='LSTM'):
+		MODEL_PATH = shared.PATH_MODELS + f'scats_{type}.pt'
 		self.type = type
 		self.SEQ_LEN = 24
 		EPOCHS = 50

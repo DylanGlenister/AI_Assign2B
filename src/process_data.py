@@ -7,7 +7,7 @@ import shared
 
 # Import dataset
 raw_data = pd.read_csv(
-	'./scats_data.csv',
+	shared.PATH_RAW_DATASET,
 	dtype={
 		'SCATS Number': int,
 		'Location': str,
@@ -180,4 +180,4 @@ def drop_pointless_sites(_df: pd.DataFrame) -> pd.DataFrame:
 reduced = drop_pointless_sites(reconfigured)
 
 # Save dataframe to csv
-reduced.to_csv(shared.PATH_DATASET)
+reduced.to_csv(shared.PATH_PROCESSED_DATASET)

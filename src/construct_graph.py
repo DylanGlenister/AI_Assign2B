@@ -18,7 +18,7 @@ def get_edge_lookup() -> dict[tuple[int, str], int]:
 
 def get_locations() -> dict[int, tuple[float, float]]:
 	'''Get a dictionary of all SCATs sites and their locations.'''
-	scats_df = pd.read_csv(shared.PATH_DATASET)
+	scats_df = pd.read_csv(shared.PATH_PROCESSED_DATASET)
 	# Reduce the dataframe to only the needed unformation
 	sites = scats_df[[shared.COLUMN_SCAT, shared.COLUMN_DIRECTION, shared.COLUMN_LATITUDE, shared.COLUMN_LONGITUDE]].copy().drop_duplicates()
 	# Average the locations

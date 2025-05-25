@@ -36,7 +36,7 @@ def generate_map(_start: int, _end: int, _paths, _colours: list[tuple[str, str]]
 def graph_visualisation(_model: str):
 	'''Creates an openstreetmap file that displays the node/edge information.'''
 
-	scats_df = pd.read_csv(shared.PATH_DATASET)
+	scats_df = pd.read_csv(shared.PATH_PROCESSED_DATASET)
 
 	model = PreLoadedPredictor(_model, 0, '10:00')
 

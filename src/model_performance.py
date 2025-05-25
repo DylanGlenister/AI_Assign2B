@@ -4,7 +4,7 @@ import pandas as pd
 import shared
 from RNNModels import PreLoadedPredictor
 
-df = pd.read_csv(shared.PATH_DATASET)
+df = pd.read_csv(shared.PATH_PROCESSED_DATASET)
 df.set_index([shared.COLUMN_SCAT, shared.COLUMN_DIRECTION, 'ID', 'Day_of_week'], inplace=True)
 df.drop(columns=[shared.COLUMN_LATITUDE, shared.COLUMN_LONGITUDE], inplace=True)
 df.drop_duplicates(inplace=True)
